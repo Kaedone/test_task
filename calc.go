@@ -2,36 +2,55 @@ package main
 
 import (
 	"fmt"
+	"strconv"
+	"strings"
 )
 
 func main() {
-	var operator string
-	var num1, num2 float64
+	var input string
+	fmt.Println("Введите выражение:")
+	fmt.Scanln(&input)
 
-	fmt.Print("Введите первое число: ")
-	fmt.Scanln(&num1)
+	// Разбиваем ввод на числа и операторы
+	elements := strings.Fields(input)
 
-	fmt.Print("Введите второе число: ")
-	fmt.Scanln(&num2)
+	// Преобразуем
+	numbers := []float64{}
+	operators := []string{}
 
-	fmt.Print("Введите оператор (+, -, *, /): ")
-	fmt.Scanln(&operator)
-
-	result := 0.0
-
-	switch operator {
-	case "+":
-		result = num1 + num2
-	case "-":
-		result = num1 - num2
-	case "*":
-		result = num1 * num2
-	case "/":
-		result = num1 / num2
-	default:
-		fmt.Println("Некорректный оператор")
-		return
+	for _, element := range elements {
+		if val, err := strconv.ParseFloat(element, 64); err == nil {
+			numbers = append(numbers, val)
+		} else {
+			operators = append(operators, element)
+		}
 	}
 
-	fmt.Printf("%.2f %s %.2f = %.2f", num1, operator, num2, result)
+	// Выполняем вычисления (работает порядок операций)
+	for _, operator := range []string{"*", "/", "+", "-"} {
+		for i := 0; i < len(operators); i++ {
+			if operators[i] == operator {
+				result := 0.0
+
+				switch operator {
+				case "+":
+					result = numbers[i] + numbers[i+1]
+				case "-":
+					result = numbers[i] - numbers[i+1]
+				case "*":
+					result = numbers[i] * numbers[i+1]
+				case "/":
+					result = numbers[i] / numbers[i+1]
+				}
+
+				numbers[i] = result
+				numbers = append(numbers[:i+1], numbers[i+2:]...)
+				operators = append(operators[:i], operators[i+1:]...)
+				i--
+			}
+		}
+	}
+
+	// Вывод результата
+	fmt.Printf("Результат: %.2f", numbers[0])
 }
